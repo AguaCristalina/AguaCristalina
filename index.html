@@ -539,7 +539,22 @@
       position: absolute; top: 24px; right: 24px;
       background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;
     }
-  </style>
+  
+.video-carousel{position:relative;display:flex;align-items:center;gap:12px}
+.carousel-track{display:flex;gap:24px;overflow-x:auto;scroll-behavior:smooth;scroll-snap-type:x mandatory;padding:20px 10px}
+.carousel-track::-webkit-scrollbar{display:none}
+.carousel-btn{width:48px;height:48px;border:none;border-radius:50%;cursor:pointer;background:#2e7dd6;color:#fff;font-size:22px;flex-shrink:0}
+.video-card{
+scroll-snap-align:center;
+transition:transform .35s ease,opacity .35s ease,filter .35s ease;
+}
+@media(min-width:901px){
+.video-card{transform:scale(.92);opacity:.75;filter:blur(1px);}
+.video-card.active{transform:scale(1);opacity:1;filter:none;}
+}
+@media(max-width:900px){.carousel-btn{display:none}}
+
+</style>
 </head>
 <body>
 
@@ -632,32 +647,29 @@
     </div>
   </section>
 
-  <section id="videos">
-    <div class="container">
-      <div class="videos-header reveal">
-        <div class="section-label">Ver para creer</div>
-        <h2 class="section-title" style="color:white;">La fábrica, <strong>el proceso</strong></h2>
-      </div>
-      <div class="video-grid reveal">
-        <div class="video-card featured">
-          <iframe
-            data-src="https://player.vimeo.com/video/1196746310?autoplay=1&muted=1&loop=1&background=1"
-            title="Cristalina — Fábrica"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowfullscreen>
-          </iframe>
-        </div>
-        <div class="video-card">
-          <iframe
-            data-src="https://player.vimeo.com/video/1196746752?autoplay=1&muted=1&loop=1&background=1"
-            title="Cristalina — Extra"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowfullscreen>
-          </iframe>
-        </div>
-      </div>
-    </div>
-  </section>
+  
+<section id="videos">
+<div class="container">
+<div class="videos-header reveal">
+<div class="section-label">Ver para creer</div>
+<h2 class="section-title" style="color:white;">La fábrica, <strong>el proceso</strong></h2>
+</div>
+<div class="video-carousel reveal">
+<button class="carousel-btn prev">❮</button>
+<div class="carousel-track" id="carouselTrack">
+<div class="video-card"><iframe loading="lazy" data-src="https://player.vimeo.com/video/1196746310?autoplay=1&muted=1&loop=1&background=1"></iframe></div>
+<div class="video-card"><iframe loading="lazy" data-src="https://player.vimeo.com/video/1196746752?autoplay=1&muted=1&loop=1&background=1"></iframe></div>
+<div class="video-card"><iframe loading="lazy" data-src="https://player.vimeo.com/video/1198121170?autoplay=1&muted=1&loop=1&background=1"></iframe></div>
+<div class="video-card active" id="featuredAudio"><iframe loading="lazy" data-src="https://player.vimeo.com/video/1198137985?autoplay=1&muted=1&loop=1"></iframe></div>
+<div class="video-card"><iframe loading="lazy" data-src="https://player.vimeo.com/video/1198139225?autoplay=1&muted=1&loop=1&background=1"></iframe></div>
+<div class="video-card"><iframe loading="lazy" data-src="https://player.vimeo.com/video/1198139638?autoplay=1&muted=1&loop=1&background=1"></iframe></div>
+<div class="video-card"><iframe loading="lazy" data-src="https://player.vimeo.com/video/1198140013?autoplay=1&muted=1&loop=1&background=1"></iframe></div>
+</div>
+<button class="carousel-btn next">❯</button>
+</div>
+</div>
+</section>
+
 
   <section id="business">
     <div class="container">
@@ -884,6 +896,39 @@
         form.classList.remove('form-sending');
       }
     });
-  </script>
+  
+const track=document.getElementById('carouselTrack');
+document.querySelector('.next')?.addEventListener('click',()=>track.scrollBy({left:350,behavior:'smooth'}));
+document.querySelector('.prev')?.addEventListener('click',()=>track.scrollBy({left:-350,behavior:'smooth'}));
+
+function updateCenterCard(){
+ if(window.innerWidth<=900 || !track) return;
+ const cards=document.querySelectorAll('.video-card');
+ const trackCenter=track.getBoundingClientRect().left + track.offsetWidth/2;
+ let closest=null,minDistance=Infinity;
+
+ cards.forEach(card=>{
+   const rect=card.getBoundingClientRect();
+   const center=rect.left + rect.width/2;
+   const distance=Math.abs(trackCenter-center);
+   card.classList.remove('active');
+   if(distance<minDistance){minDistance=distance;closest=card;}
+ });
+
+ if(closest) closest.classList.add('active');
+}
+
+window.addEventListener('load',()=>{
+ const featured=document.getElementById('featuredAudio');
+ if(featured && track){
+   track.scrollLeft=featured.offsetLeft-(track.offsetWidth/2)+(featured.offsetWidth/2);
+ }
+ setTimeout(updateCenterCard,300);
+});
+
+track?.addEventListener('scroll',updateCenterCard);
+window.addEventListener('resize',updateCenterCard);
+
+</script>
 </body>
 </html>
